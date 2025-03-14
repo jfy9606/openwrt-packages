@@ -6,12 +6,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=adguardhome
-PKG_VERSION:=0.107.36
+PKG_VERSION:=0.107.56
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/AdguardTeam/AdGuardHome/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=c606d44200625827ef8bd432bed7ebf15ae952ad2d4ccec8a9fa07b91df1013b
+PKG_HASH:=e4285c8d7611fe677e45dad469fbc0237ebeea57094148a059edd5aa32ab8fce
 PKG_BUILD_DIR:=$(BUILD_DIR)/AdGuardHome-$(PKG_VERSION)
 
 PKG_LICENSE:=GPL-3.0-only
@@ -20,7 +20,7 @@ PKG_MAINTAINER:=Dobroslaw Kijowski <dobo90@gmail.com>
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/AdguardTeam/AdGuardHome
 GO_PKG_BUILD_PKG:=$(GO_PKG)
@@ -58,7 +58,7 @@ define Download/adguardhome-frontend
 	URL:=https://github.com/AdguardTeam/AdGuardHome/releases/download/v$(PKG_VERSION)/
 	URL_FILE:=AdGuardHome_frontend.tar.gz
 	FILE:=$(FRONTEND_FILE)
-	HASH:=610328889dc08ddbe6a92415b80182424f465134b7071377829b01a725dcc783
+	HASH:=f7d6308d17ed7ac97b62e4cb5bec79a647695ade94b91a8803a6dc0fdbac407f
 endef
 
 define Build/Prepare
