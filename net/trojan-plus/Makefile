@@ -15,12 +15,13 @@ PKG_SOURCE_URL:=https://github.com/peter-tank/trojan-plus.git
 PKG_SOURCE_DATE:=2020-09-06
 PKG_SOURCE_VERSION:=a6394cdd718669b0c7491493a78e61f6f0f899b3
 PKG_MIRROR_HASH:=2d37d09fe6d39d7981116ad387706f58f2b30b74a34e27fc5608f267dacc9208
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.xz
 
 PKG_BUILD_PARALLEL:=1
 PKG_BUILD_DEPENDS:=openssl
 
 PKG_LICENSE:=GPL-3.0
-PKG_LICENSE_FILES:=LICENSE
+PKG_LICENSE_FILE:=LICENSE
 PKG_MAINTAINER:=Trojan-Plus-Group
 
 include $(INCLUDE_DIR)/package.mk
@@ -52,14 +53,13 @@ CMAKE_OPTIONS += \
 	-DBoost_NO_BOOST_CMAKE=ON
 
 define Package/trojan-plus
-  SECTION:=net
-  CATEGORY:=Network
-  SUBMENU:=Web Servers/Proxies
-  TITLE:=An unidentifiable mechanism that helps you bypass GFW. It's compatible with original trojan with experimental features.
-  URL:=https://github.com/Trojan-Plus-Group/trojan-plus
-  DEPENDS:= \
-    +libpthread +libstdcpp +libopenssl \
-    +boost +boost-system +boost-program_options
+	SECTION:=net
+	CATEGORY:=Network
+	TITLE:=An unidentifiable mechanism that helps you bypass GFW. It's compatible with original trojan with experimental features.
+	URL:=https://github.com/Trojan-Plus-Group/trojan-plus
+	DEPENDS:= \
+		+libpthread +libstdcpp +libopenssl \
+		+boost +boost-system +boost-program_options
 endef
 
 define Package/trojan-plus/install
@@ -68,4 +68,3 @@ define Package/trojan-plus/install
 endef
 
 $(eval $(call BuildPackage,trojan-plus))
-
