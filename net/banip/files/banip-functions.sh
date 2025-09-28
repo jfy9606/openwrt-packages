@@ -264,20 +264,24 @@ f_conf() {
 		option_cb() {
 			local option="${1}" value="${2//\"/\\\"}"
 
-			eval "${option}=\"${value}\""
+			if [ -d "${value}" ] || { [ ! -d "${value}" ] && [ -n "${value%%[./]*}" ]; }; then
+				eval "${option}=\"${value}\""
+			fi
 		}
 		list_cb() {
 			local append option="${1}" value="${2//\"/\\\"}"
 
-			eval "append=\"\${${option}}\""
-			case "${option}" in
-				"ban_logterm")
-					eval "${option}=\"${append}${value}\\|\""
-					;;
-				*)
-					eval "${option}=\"${append}${value} \""
-					;;
-			esac
+			if [ -d "${value}" ] || { [ ! -d "${value}" ] && [ -n "${value%%[./]*}" ]; }; then
+				eval "append=\"\${${option}}\""
+				case "${option}" in
+					"ban_logterm")
+						eval "${option}=\"${append}${value}\\|\""
+						;;
+					*)
+						eval "${option}=\"${append}${value} \""
+						;;
+				esac
+			fi
 		}
 	}
 	config_load banip
@@ -620,11 +624,11 @@ f_nftinit() {
 	fi
 
 	if [ "${ban_logprerouting}" = "1" ]; then
-		log_icmp="log level ${ban_nftloglevel} prefix \"banIP/pre-icmp/drop: \""
-		log_syn="log level ${ban_nftloglevel} prefix \"banIP/pre-syn/drop: \""
-		log_udp="log level ${ban_nftloglevel} prefix \"banIP/pre-udp/drop: \""
-		log_tcp="log level ${ban_nftloglevel} prefix \"banIP/pre-tcp/drop: \""
-		log_ct="log level ${ban_nftloglevel} prefix \"banIP/pre-ct/drop: \""
+		log_icmp="log level ${ban_nftloglevel} prefix \"banIP/pre-icmp/drop: \" limit rate 10/second"
+		log_syn="log level ${ban_nftloglevel} prefix \"banIP/pre-syn/drop: \" limit rate 10/second"
+		log_udp="log level ${ban_nftloglevel} prefix \"banIP/pre-udp/drop: \" limit rate 10/second"
+		log_tcp="log level ${ban_nftloglevel} prefix \"banIP/pre-tcp/drop: \" limit rate 10/second"
+		log_ct="log level ${ban_nftloglevel} prefix \"banIP/pre-ct/drop: \" limit rate 10/second"
 	fi
 
 	{
@@ -677,8 +681,7 @@ f_nftinit() {
 		printf "%s\n" "add rule inet banIP wan-input ct state established,related counter accept"
 		printf "%s\n" "add rule inet banIP wan-input meta nfproto ipv4 udp sport 67-68 udp dport 67-68 counter accept"
 		printf "%s\n" "add rule inet banIP wan-input meta nfproto ipv6 udp sport 547 udp dport 546 counter accept"
-		printf "%s\n" "add rule inet banIP wan-input meta nfproto ipv6 icmpv6 type { nd-neighbor-advert, nd-neighbor-solicit, nd-router-advert} ip6 hoplimit 1 counter accept"
-		printf "%s\n" "add rule inet banIP wan-input meta nfproto ipv6 icmpv6 type { nd-neighbor-advert, nd-neighbor-solicit, nd-router-advert} ip6 hoplimit 255 counter accept"
+		printf "%s\n" "add rule inet banIP wan-input meta nfproto ipv6 icmpv6 type { nd-neighbor-solicit, nd-neighbor-advert, nd-router-advert } ip6 hoplimit 255 counter accept"
 		[ -n "${allow_dport}" ] && printf "%s\n" "add rule inet banIP wan-input ${allow_dport} counter accept"
 		[ "${ban_loginbound}" = "1" ] && printf "%s\n" "add rule inet banIP wan-input meta mark set 1 counter jump _inbound" || printf "%s\n" "add rule inet banIP wan-input counter jump _inbound"
 
@@ -728,8 +731,8 @@ f_down() {
 
 	# set log target
 	#
-	[ "${ban_loginbound}" = "1" ] && log_inbound="log level ${ban_nftloglevel} prefix \"banIP/inbound/${ban_blockpolicy}/${feed}: \""
-	[ "${ban_logoutbound}" = "1" ] && log_outbound="log level ${ban_nftloglevel} prefix \"banIP/outbound/reject/${feed}: \""
+	[ "${ban_loginbound}" = "1" ] && log_inbound="log level ${ban_nftloglevel} prefix \"banIP/inbound/${ban_blockpolicy}/${feed}: \" limit rate 10/second"
+	[ "${ban_logoutbound}" = "1" ] && log_outbound="log level ${ban_nftloglevel} prefix \"banIP/outbound/reject/${feed}: \" limit rate 10/second"
 
 	# set feed target
 	#
@@ -1229,7 +1232,10 @@ f_rmset() {
 			if ! printf "%s" "allowlist blocklist ${ban_feed}" | "${ban_grepcmd}" -q "${feed%.*}" ||
 				! printf "%s" "allowlist blocklist ${feedlist}" | "${ban_grepcmd}" -q "${feed%.*}" ||
 				{ [ "${feed%.*}" = "country" ] && [ "${ban_countrysplit}" = "1" ]; } ||
-				{ [ "${feed%.*}" = "asn" ] && [ "${ban_asnsplit}" = "1" ]; }; then
+				{ [ "${feed%.*}" = "asn" ] && [ "${ban_asnsplit}" = "1" ]; } ||
+				{ [ "${feed%.*}" != "allowlist" ] && [ "${feed%.*}" != "blocklist" ] && [ "${ban_allowlistonly}" = "1" ] &&
+					! printf "%s" "${ban_feedin}" | "${ban_grepcmd}" -q "allowlist" &&
+					! printf "%s" "${ban_feedout}" | "${ban_grepcmd}" -q "allowlist"; }; then
 				case "${feed%%.*}" in
 					"country")
 						country="${feed%.*}"
@@ -1899,7 +1905,8 @@ f_monitor() {
 					ip="${ip##* }"
 					[ -n "${ip%%::*}" ] && proto=".v6"
 				fi
-				if [ -n "${proto}" ] && ! "${ban_nftcmd}" get element inet banIP allowlist"${proto}" "{ ${ip} }" >/dev/null 2>&1 && ! "${ban_nftcmd}" get element inet banIP blocklist"${proto}" "{ ${ip} }" >/dev/null 2>&1; then
+				if [ -n "${proto}" ] && ! "${ban_nftcmd}" get element inet banIP allowlist"${proto}" "{ ${ip} }" >/dev/null 2>&1 &&
+					! "${ban_nftcmd}" get element inet banIP blocklist"${proto}" "{ ${ip} }" >/dev/null 2>&1; then
 					f_log "info" "suspicious IP '${ip}'"
 					log_raw="$(eval ${loglimit_cmd})"
 					log_count="$(printf "%s\n" "${log_raw}" | "${ban_grepcmd}" -c "suspicious IP '${ip}'")"
@@ -1920,9 +1927,11 @@ f_monitor() {
 										prefix="${idx}"
 										continue
 									else
-										cidr="${prefix}/${idx}"
-										if "${ban_nftcmd}" add element inet banIP "blocklist${proto}" { ${cidr} ${nft_expiry} } >/dev/null 2>&1; then
-											f_log "info" "add IP range '${cidr}' (source: ${rdap_info:-"n/a"} ::: expiry: ${ban_nftexpiry:-"-"}) to blocklist${proto} set"
+										if [ -n "${prefix%%::*}" ] && [ "${prefix%%.*}" != "127" ] && [ "${prefix%%.*}" != "0" ]; then
+											cidr="${prefix}/${idx}"
+											if "${ban_nftcmd}" add element inet banIP "blocklist${proto}" { ${cidr} ${nft_expiry} } >/dev/null 2>&1; then
+												f_log "info" "add IP range '${cidr}' (source: ${rdap_info:-"n/a"} ::: expiry: ${ban_nftexpiry:-"-"}) to blocklist${proto} set"
+											fi
 										fi
 										prefix=""
 									fi
