@@ -5,7 +5,7 @@
  
          do {
 +#if LINUX_VERSION_CODE < KERNEL_VERSION(6,6,0)
-             start = u64_stats_fetch_begin_irq(&stats64->syncp);
+             start = u64_stats_fetch_begin(&stats64->syncp);
 +#else
 +		start = u64_stats_fetch_begin(&stats64->syncp);
 +#endif
@@ -17,7 +17,7 @@
  	    tx_bytes = u64_stats_read(&stats64->tx_bytes);
  #endif
 +#if LINUX_VERSION_CODE < KERNEL_VERSION(6,6,0)
-         } while (u64_stats_fetch_retry_irq(&stats64->syncp, start));
+         } while (u64_stats_fetch_retry(&stats64->syncp, start));
 +#else
 +	} while (u64_stats_fetch_retry(&stats64->syncp, start));
 +#endif
@@ -29,7 +29,7 @@
      sprintf(qmap_net->name, "%s.%d", real_dev->name, offset_id + 1);
      qmap_net->netdev_ops = &qmap_netdev_ops;
 +#if LINUX_VERSION_CODE < KERNEL_VERSION(5,17,0)
-     memcpy (qmap_net->dev_addr, real_dev->dev_addr, ETH_ALEN);
+     ether_addr_copy(qmap_net->dev_addr, real_dev->dev_addr);
 +#else
 +    __dev_addr_set(qmap_net, real_dev->dev_addr, ETH_ALEN);
 +#endif
