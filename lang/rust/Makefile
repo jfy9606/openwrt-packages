@@ -84,6 +84,17 @@ define Host/Uninstall
 		$(BASH) $(RUST_UNINSTALL) || echo No Uninstall
 endef
 
+define Host/Prepare
+	$(call Host/Prepare/Default)
+
+	@echo ">>> Fix rust vendor missing *.orig files"
+	@if [ -d "$(HOST_BUILD_DIR)/vendor" ]; then \
+		find "$(HOST_BUILD_DIR)/vendor" -name Cargo.toml | while read f; do \
+			[ -f "$$f.orig" ] || cp "$$f" "$$f.orig"; \
+		done; \
+	fi
+endef
+
 define Host/Compile
 	$(RUST_SCCACHE_VARS) \
 	CARGO_HOME=$(CARGO_HOME) \
