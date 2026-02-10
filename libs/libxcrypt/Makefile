@@ -16,6 +16,7 @@ PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
+TARGET_CFLAGS += -Wno-error=format-nonliteral
 
 define Package/libxcrypt
   SECTION:=libs
