@@ -84,9 +84,21 @@ define Host/Uninstall
 		$(BASH) $(RUST_UNINSTALL) || echo No Uninstall
 endef
 
+define Host/Prepare
+	$(call Host/Prepare/Default)
+	find $(HOST_BUILD_DIR)/vendor -name .cargo-checksum.json -exec sed -i \
+		-e 's/"Cargo.toml.orig":"[a-f0-9]*",//g' \
+		-e 's/,"Cargo.toml.orig":"[a-f0-9]*"//g' \
+		{} +
+endef
+
 define Host/Compile
 	$(RUST_SCCACHE_VARS) \
 	CARGO_HOME=$(CARGO_HOME) \
+	GITHUB_ACTIONS= \
+	GITHUB_WORKFLOW= \
+	GITHUB_EVENT_NAME= \
+	CI= \
 	TARGET_CFLAGS="$(TARGET_CFLAGS)" \
 	$(PYTHON) $(HOST_BUILD_DIR)/x.py \
 		--build-dir $(HOST_BUILD_DIR)/build \
