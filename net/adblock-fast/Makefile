@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright 2023-2025 MOSSDeF, Stan Grishin (stangri@melmac.ca).
+# Copyright 2023-2026 MOSSDeF, Stan Grishin (stangri@melmac.ca).
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=adblock-fast
-PKG_VERSION:=1.2.0
-PKG_RELEASE:=22
+PKG_VERSION:=1.2.1
+PKG_RELEASE:=7
 PKG_MAINTAINER:=Stan Grishin <stangri@melmac.ca>
 PKG_LICENSE:=AGPL-3.0-or-later
 
@@ -16,12 +16,15 @@ define Package/adblock-fast
   CATEGORY:=Network
   TITLE:=AdBlock Fast Service
   URL:=https://github.com/stangri/adblock-fast/
-  DEPENDS:=+jshn +curl
-	DEPENDS+=+!BUSYBOX_DEFAULT_AWK:gawk
-	DEPENDS+=+!BUSYBOX_DEFAULT_GREP:grep
-	DEPENDS+=+!BUSYBOX_DEFAULT_SED:sed
-	DEPENDS+=+!BUSYBOX_DEFAULT_SORT:coreutils-sort
   PKGARCH:=all
+  DEPENDS:= \
+	+jshn \
+	+curl \
+	+resolveip \
+	+!BUSYBOX_DEFAULT_AWK:gawk \
+	+!BUSYBOX_DEFAULT_GREP:grep \
+	+!BUSYBOX_DEFAULT_SED:sed \
+	+!BUSYBOX_DEFAULT_SORT:coreutils-sort
 endef
 
 define Package/adblock-fast/description
