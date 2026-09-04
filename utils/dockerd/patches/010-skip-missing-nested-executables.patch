@@ -1,0 +1,12 @@
+--- a/hack/make/binary-daemon
++++ b/hack/make/binary-daemon
+@@ -15,7 +15,9 @@
+ 	fi
+ 	echo "Copying nested executables into $dir"
+ 	for file in containerd containerd-shim-runc-v2 ctr runc docker-init rootlesskit rootlesskit-docker-proxy dockerd-rootless.sh dockerd-rootless-setuptool.sh; do
++	if command -v "$file" > /dev/null 2>&1; then
+ 		cp -f "$(command -v "$file")" "$dir/"
++	fi
+ 	done
+ 	# vpnkit might not be available for the target platform, see vpnkit stage in
+ 	# the Dockerfile for more information.
