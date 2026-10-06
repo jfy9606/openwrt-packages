@@ -1,0 +1,49 @@
+From: jfy9606 <jfy9606@gmail.com>
+Date: Tue, 6 Oct 2026 18:40:00 +0800
+Subject: [PATCH] SDBM_File: guard the malloc/free declarations with MYMALLOC
+
+Perl 5.28's bundled SDBM_File re-declares the libc allocator using perl's
+legacy typedefs:
+
+    extern Malloc_t malloc(MEM_SIZE);
+    extern Free_t   free(Malloc_t);
+
+Those typedefs come from the generated config.h.  When Configure picks the
+system allocator (malloc_type="MALLOC", i.e. MYMALLOC undefined) they stay
+Malloc_t=char * and Free_t=int, so the declarations conflict with the
+<stdlib.h> prototypes (void *malloc(size_t) / void free(void *)) that
+sdbm.h has just included.  GCC 14+/glibc 2.4x treat an incompatible
+redeclaration of a builtin as a hard error, so building the host perl fails:
+
+    sdbm.c:38:17: error: conflicting types for 'malloc'; have 'char *(size_t)'
+    sdbm.c:39:15: error: conflicting types for 'free'; have 'int(char *)'
+
+Only emit those declarations when perl actually uses its own malloc: in that
+case sdbm.h maps malloc/free to Perl_malloc/Perl_mfree (whose prototypes match
+Malloc_t/Free_t) and nothing clashes with <stdlib.h>.  Otherwise the standard
+declarations already in scope are used as-is.
+
+Tested with gcc 15.2.0 / glibc 2.43 by rebuilding ext/SDBM_File with the
+original compile line.
+
+Signed-off-by: jfy9606 <jfy9606@gmail.com>
+---
+ ext/SDBM_File/sdbm.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+--- a/ext/SDBM_File/sdbm.c
++++ b/ext/SDBM_File/sdbm.c
+@@ -35,8 +35,13 @@
+ extern "C" {
+ #endif
+ 
++/* Only declare the allocator entry points when perl uses its own malloc: otherwise
++ * these conflict with the <stdlib.h> prototypes above (Malloc_t is "char *" and Free_t
++ * is "int" in that configuration), which modern gcc/glibc reject as hard errors. */
++#ifdef MYMALLOC
+ extern Malloc_t malloc(MEM_SIZE);
+ extern Free_t free(Malloc_t);
++#endif
+ 
+ #ifdef __cplusplus
+ }
