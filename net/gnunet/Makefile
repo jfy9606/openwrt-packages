@@ -350,7 +350,7 @@ PLUGIN_fs-sqlite:=datastore_sqlite
 DEPENDS_utils:=+certtool +openssl-util
 BIN_utils:=gns-proxy-setup-ca transport-certificate-creation
 
-DEPENDS_vpn:=+kmod-tun +iptables +PACKAGE_firewall4:firewall4 +!PACKAGE_firewall4:firewall
+DEPENDS_vpn:=+kmod-tun +iptables +firewall
 BIN_vpn:=vpn
 FILE_MODES_vpn:=/usr/lib/gnunet/libexec/gnunet-helper-exit:root:gnunet:4750 /usr/lib/gnunet/libexec/gnunet-helper-vpn:root:gnunet:4750
 LIB_vpn:=dnsstub tun vpn
