@@ -18,7 +18,7 @@ PKG_MAINTAINER:=Erik Larsson <who+openwrt@cnackers.org>
 PKG_LICENSE:=LGPL-2.1-or-later
 PKG_LICENSE_FILES:=LICENSE
 
-PKG_BUILD_DEPENDS:=python-setuptools
+PKG_BUILD_DEPENDS:=python-setuptools/host
 
 PYTHON3_PKG_FORCE_DISTUTILS_SETUP:=1
 

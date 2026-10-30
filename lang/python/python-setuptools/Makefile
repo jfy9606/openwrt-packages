@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-setuptools
 PKG_VERSION:=80.9.0
-PKG_RELEASE:=1
+PKG_RELEASE:=4
 
 PYPI_NAME:=setuptools
 PKG_HASH:=f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c
@@ -17,11 +17,18 @@ PKG_HASH:=f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Jeffery To <jeffery.to@gmail.com>
-CPE_ID:=cpe:/a:python:setuptools
+PKG_CPE_ID:=cpe:/a:python:setuptools
+
+HOST_BUILD_DEPENDS:= \
+        python3/host \
+        python-wheel/host \
+        python-packaging/host
 
 include ../pypi.mk
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/host-build.mk
 include ../python3-package.mk
+include ../python3-host-build.mk
 
 define Package/python3-setuptools/Default
   SECTION:=lang
@@ -33,7 +40,7 @@ endef
 define Package/python3-pkg-resources
 $(call Package/python3-setuptools/Default)
   TITLE:=Package resource API
-  DEPENDS:=+python3-light +python3-email +python3-logging +python3-urllib
+  DEPENDS:=+python3-light +python3-email +python3-logging +python3-urllib +python3-xml
 endef
 
 define Package/python3-setuptools
@@ -80,3 +87,5 @@ $(eval $(call BuildPackage,python3-setuptools))
 
 $(eval $(call BuildPackage,python3-pkg-resources-src))
 $(eval $(call BuildPackage,python3-setuptools-src))
+
+$(eval $(call HostBuild))

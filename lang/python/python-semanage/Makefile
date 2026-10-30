@@ -6,13 +6,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-semanage
-PKG_VERSION:=3.5
-PKG_RELEASE:=1
+PKG_VERSION:=3.8.1
+PKG_RELEASE:=2
 
 SRC_NAME:=libsemanage
 PKG_SOURCE:=$(SRC_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/SELinuxProject/selinux/releases/download/$(PKG_VERSION)
-PKG_HASH:=f53534e50247538280ed0d76c6ce81d8fb3939bd64cadb89da10dba42e40dd9c
+PKG_HASH:=7b39127b219cc70bfd935a4af6b0f2ba83d4b35c916f253c7e942c23ab490f07
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(SRC_NAME)-$(PKG_VERSION)
 
 PKG_MAINTAINER:=Thomas Petazzoni <thomas.petazzoni@bootlin.com>
@@ -49,7 +49,10 @@ define Package/python3-semanage/description
 endef
 
 MAKE_VARS += \
-	$(PYTHON3_VARS)
+	$(PYTHON3_VARS) \
+	$(HOST_PYTHON3_PIP_VARS) \
+	PYCEXT=.cpython-$(PYTHON3_VERSION_MAJOR)$(PYTHON3_VERSION_MINOR)$(ABIFLAGS)-$(MULTIARCH).so \
+	PYTHON_SETUP_ARGS="--no-compile --no-build-isolation"
 
 define Build/Compile
 	$(call Build/Compile/Default,pywrap)

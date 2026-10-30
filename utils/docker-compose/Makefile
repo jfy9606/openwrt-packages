@@ -1,14 +1,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=compose
-PKG_VERSION:=2.39.1
+PKG_VERSION:=5.1.4
 PKG_RELEASE:=1
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
 
 PKG_SOURCE:=$(PKG_NAME)-v$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/docker/compose/tar.gz/v${PKG_VERSION}?
-PKG_HASH:=35287aff54d826241fb727b3024b1cb46849770ac8dd166f0702f8aa2b5f7e30
+PKG_HASH:=363ce6ccca46f836648f5f4ec9ecfdb6f631daa126570cc3fc69140edeed6794
 
 PKG_MAINTAINER:=Javier Marcet <javier@marcet.info>
 
@@ -16,9 +16,9 @@ PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
 PKG_BUILD_FLAGS:=no-mips16
 
-GO_PKG:=github.com/docker/compose/v2
-GO_PKG_BUILD_PKG:=github.com/docker/compose/v2/cmd
-GO_PKG_LDFLAGS_X:=github.com/docker/compose/v2/internal.Version=v$(PKG_VERSION)
+GO_PKG:=github.com/docker/compose/v5
+GO_PKG_BUILD_PKG:=github.com/docker/compose/v5/cmd
+GO_PKG_LDFLAGS_X:=github.com/docker/compose/v5/internal.Version=v$(PKG_VERSION)
 GO_PKG_TAGS:=e2e,kube
 
 include $(INCLUDE_DIR)/package.mk

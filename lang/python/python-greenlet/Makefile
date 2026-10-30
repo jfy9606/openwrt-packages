@@ -8,19 +8,24 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-greenlet
-PKG_VERSION:=3.0.2
+PKG_VERSION:=3.4.0
 PKG_RELEASE:=1
 
 PYPI_NAME:=greenlet
-PKG_HASH:=1c1129bc47266d83444c85a8e990ae22688cf05fb20d7951fd2866007c2ba9bc
+PKG_HASH:=f50a96b64dafd6169e595a5c56c9146ef80333e67d4476a65a9c55f400fc22ff
 
-PKG_MAINTAINER:=Jan Pavlinec <jan.pavlinec1@gmail.com>
+PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
 # FIXME: remove when GCC10 is the oldest supported compiler, or the issue goes away
 PKG_BUILD_FLAGS:=no-mips16
 
-HOST_BUILD_DEPENDS:=python3/host python-build/host python-installer/host python-wheel/host
+HOST_BUILD_DEPENDS:= \
+	python3/host \
+	python-setuptools/host \
+	python-build/host \
+	python-installer/host \
+	python-wheel/host
 
 include ../pypi.mk
 include $(INCLUDE_DIR)/package.mk

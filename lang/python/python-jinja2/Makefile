@@ -5,12 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-jinja2
-PKG_VERSION:=3.1.4
+PKG_VERSION:=3.1.6
 PKG_RELEASE:=1
 
 PYPI_NAME:=Jinja2
 PYPI_SOURCE_NAME:=jinja2
-PKG_HASH:=4a3aee7acbbe7303aede8e9648d13b8bf88a429282aa6122a993f0ac800cb369
+PKG_HASH:=0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d
 
 PKG_MAINTAINER:=Michal Vasilek <michal.vasilek@nic.cz>
 PKG_LICENSE:=BSD-3-Clause

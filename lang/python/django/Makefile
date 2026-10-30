@@ -8,16 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=django
-PKG_VERSION:=5.1.14
+PKG_VERSION:=6.0.7
 PKG_RELEASE:=1
 
-PYPI_NAME:=Django
-PYPI_SOURCE_NAME:=django
-PKG_HASH:=b98409fb31fdd6e8c3a6ba2eef3415cc5c0020057b43b21ba7af6eff5f014831
+PYPI_NAME:=django
+PKG_HASH:=2998503fc083124fb58037084bfa00de323c7c743f05f1b4284e77bff0ab8890
 
 PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>, Peter Stadler <peter.stadler@student.uibk.ac.at>
 PKG_LICENSE:=BSD-3-Clause
-PKG_LICENSE_FILES:=LICENSE LICENSE.python
+PKG_LICENSE_FILES:=AUTHORS LICENSE LICENSE.python
 PKG_CPE_ID:=cpe:/a:djangoproject:django
 
 include ../pypi.mk
@@ -28,10 +27,9 @@ define Package/python3-django
   SUBMENU:=Python
   SECTION:=lang
   CATEGORY:=Languages
-  TITLE:=The web framework for perfectionists with deadlines.
+  TITLE:=The web framework for perfectionists with deadlines
   URL:=https://www.djangoproject.com/
-  DEPENDS:= +python3 +python3-pytz +python3-sqlparse +python3-asgiref
-  CONFLICTS:=python3-django1
+  DEPENDS:= +python3 +python3-asgiref +python3-sqlparse
   PROVIDES:=django
 endef
 

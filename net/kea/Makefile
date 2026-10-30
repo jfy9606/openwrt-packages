@@ -9,24 +9,24 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=kea
-PKG_VERSION:=2.6.4
-PKG_RELEASE:=1
+PKG_VERSION:=3.0.3
+PKG_RELEASE:=3
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://ftp.isc.org/isc/kea/$(PKG_VERSION)
-PKG_HASH:=6806405e4d559abc10febd2c273dc6e2bc6ac42767afa5ca20b118ffba84a671
+PKG_HASH:=09702ddb078b637e85de9236cbedd3fb9d7af7c6e797026c538b45748ad4d631
 
 PKG_MAINTAINER:=Philip Prindeville <philipp@redfish-solutions.com>, Noah Meyerhans <frodo@morgul.net>
 PKG_LICENSE:=MPL-2.0
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_PARALLEL:=1
 PKG_BUILD_FLAGS:=gc-sections
 
-PKG_INSTALL:=1
-PKG_FIXUP:=autoreconf
-
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/meson.mk
+
+PYTHON3_PKG_BUILD:=0
+include ../../lang/python/python3-package.mk
 
 define Package/kea/Default
   SECTION:=net
@@ -64,8 +64,7 @@ endef
 define Package/kea-libs
 	$(call Package/kea/Default)
 	TITLE+=Libraries
-	DEPENDS:=+libopenssl +log4cplus \
-	+boost +boost-system
+	DEPENDS:=+libopenssl +log4cplus +boost
 endef
 define Package/kea-libs/description
 		Kea required Libraries.
@@ -172,7 +171,7 @@ endef
 define Package/kea-shell
 	$(call Package/kea/Default)
 	TITLE+=shell
-	DEPENDS:=+kea-libs
+	DEPENDS:=+kea-libs +python3-light +python3-urllib +python3-openssl
 endef
 define Package/kea-shell/description
      This simple text client uses the REST interface to connect to the Kea
@@ -192,23 +191,11 @@ endef
 
 ###### *************************************************************************
 
-CONFIGURE_ARGS += \
-	--with-boost-include="$(STAGING_DIR)/usr" \
-	--with-log4cplus="$(STAGING_DIR)/usr" \
-	--with-openssl="$(STAGING_DIR)/usr" \
-	--without-pic \
-	$(if $(CONFIG_PACKAGE_kea-perfdhcp),--enable-perfdhcp,) \
-	$(if $(CONFIG_PACKAGE_kea-shell),--enable-shell,)
-
-CONFIGURE_VARS += \
-	cross_compiling="yes"
-
-TARGET_CXXFLAGS += \
-	$(FPIC) \
-	-std=c++17
-
-TARGET_LDFLAGS += \
-	-Wl,--as-needed
+MESON_ARGS += \
+	-Dkrb5=disabled \
+	-Dmysql=disabled \
+	-Dnetconf=disabled \
+	-Dpostgresql=disabled
 
 define Package/kea-libs/install
 	$(INSTALL_DIR) $(1)/usr/lib
@@ -234,8 +221,10 @@ define Package/kea-dhcp-ddns/install
 endef
 
 define Package/kea-admin/install
-	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/share/kea/scripts
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/kea-admin $(1)/usr/sbin/kea-admin
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/share/kea/scripts/admin-utils.sh \
+		$(1)/usr/share/kea/scripts/admin-utils.sh
 endef
 
 define Package/kea-hook-ha/install
@@ -267,8 +256,15 @@ define Package/kea-perfdhcp/install
 endef
 
 define Package/kea-shell/install
-	$(INSTALL_DIR) $(1)/usr/sbin
+	$(SED) '1s,^#!/.*python.*,#!/usr/bin/python3,' \
+		$(PKG_INSTALL_DIR)/usr/sbin/kea-shell
+	$(SED) "s,^sys.path.append.*,sys.path.append('$(PYTHON3_PKG_DIR)/kea')," \
+		$(PKG_INSTALL_DIR)/usr/sbin/kea-shell
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)$(PYTHON3_PKG_DIR)/kea
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/kea-shell $(1)/usr/sbin/kea-shell
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/src/bin/shell/kea_conn.py \
+		$(PKG_BUILD_DIR)/src/bin/shell/kea_connector3.py \
+		$(1)$(PYTHON3_PKG_DIR)/kea/
 endef
 
 define Package/kea-uci/install
